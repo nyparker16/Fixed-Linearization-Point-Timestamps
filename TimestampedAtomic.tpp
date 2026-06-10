@@ -31,17 +31,16 @@ T TimestampedAtomic<T>::load_no_timestamping() {
 
 template <typename T>
 int TimestampedAtomic<T>::store(T newVal) {
-    Node* curr = head.load();
-    Node* next = new Node {newVal, TBD, curr};
+    Node* newNode = new Node {newVal, TBD, nullptr};
     while(true) {
         Node* curr = head.load();
         help_timestamp(curr);
 
-        Node* next = new Node{newVal, TBD, curr};
+        newNode -> prev = curr;
 
-        if (head.compare_exchange_weak(curr, next)) {
-            help_timestamp(next);
-            return next -> timestamp.load();
+        if (head.compare_exchange_weak(curr, newNode)) {
+            help_timestamp(newNode);
+            return newNode -> timestamp.load();
         }
     }
 }
