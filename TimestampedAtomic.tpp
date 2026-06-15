@@ -60,10 +60,10 @@ std::pair<bool, int> TimestampedAtomic<T>::CAS(T expected, T desired) {
             return {false, read_ts};
         }
 
-        Node* next = new Node{desired, TBD, curr};
+        Node* newNode = new Node{desired, TBD, curr};
 
-        if (head.compare_exchange_weak(curr, next)) {
-            help_timestamp(next);
+        if (head.compare_exchange_weak(curr, newNode)) {
+            help_timestamp(newNode);
             return {true, next -> timestamp.load()};
         }
     }
