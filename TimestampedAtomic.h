@@ -1,5 +1,6 @@
 #include <atomic>
 #include <utility>
+#include <Clock.h>
 
 template <typename T>
 class TimestampedAtomic {
@@ -9,14 +10,12 @@ class TimestampedAtomic {
             std::atomic<int> timestamp;
             Node* prev;
         };
-
         std::atomic<Node*> head;
+        Clock* clock;
         const int TBD = -1;
-
         void help_timestamp(Node* node);
-        int get_timestamp();
-
     public:
+        TimestampedAtomic(T val, Clock* c);
         std::pair<T, int> load();
         T load_no_timestamping();
         int store(T newVal);
