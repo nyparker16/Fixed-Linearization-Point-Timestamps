@@ -6,13 +6,13 @@ class Clock {
     public:
         Clock() { timestamp = 0; }
         int get_timestamp() {
-            int ts = timestamp.load();
-            timestamp.compare_exchange_strong(ts, ts+1);
-            return ts;
+            return timestamp.fetch_add(1);
         }
         /*
         int get_timestamp() {
-            return timestamp.fetch_add(1);
+            int ts = timestamp.load();
+            timestamp.compare_exchange_strong(ts, ts+1);
+            return ts;
         }
 
         int get_timestamp() {
