@@ -3,14 +3,14 @@
 #include "TimestampedAtomicNoLL.h"
 
 template <typename T> 
-TimestampedAtomic<T>::TimestampedAtomic(T val, Clock* c) {
+TimestampedAtomicNoLL<T>::TimestampedAtomicNoLL(T val, Clock* c) {
     clock = c;
     one_node = new Node{val, TBD};
-    help_timestamp(head.load());
+    help_timestamp(one_node.load());
 }
 
 template <typename T>
-void TimestampedAtomic<T>::help_timestamp(typename TimestampedAtomic<T>::Node* node) {
+void TimestampedAtomicNoLL<T>::help_timestamp(typename TimestampedAtomicNoLL<T>::Node* node) {
     if (node != nullptr && node -> timestamp.load() == TBD) {
         int expected = TBD;
         node -> timestamp.compare_exchange_strong(expected, clock -> get_timestamp());
@@ -18,28 +18,30 @@ void TimestampedAtomic<T>::help_timestamp(typename TimestampedAtomic<T>::Node* n
 }
 
 template <typename T>
-std::pair<T, int> TimestampedAtomic<T>::load() {
+std::pair<T, int> TimestampedAtomicNoLL<T>::load() {
     int read_ts = clock -> get_timestamp();
     Node* curr = one_node.load();
     help_timestamp(curr);
-    return (read_ts > curr -> timestamp) ? {curr -> val, read_ts} : {curr -> val, curr -> timestamp}; 
+    int ts = curr->timestamp.load();
+    return (read_ts > ts) ? std::make_pair(curr->val, read_ts)
+                           : std::make_pair(curr->val, ts);
     // Non-unique timestamps in the case when curr -> timestamp > read_ts
 }
 
 template <typename T>
-T TimestampedAtomic<T>::load_no_timestamping() {
-    Node* curr = oneNode.load();
+T TimestampedAtomicNoLL<T>::load_no_timestamping() {
+    Node* curr = one_node.load();
     return curr -> val;
 }
 
 template <typename T>
-int TimestampedAtomic<T>::store(T newVal) {
+int TimestampedAtomicNoLL<T>::store(T newVal) {
     Node* newNode = new Node {newVal, TBD};
     while(true) {
-        Node* curr = oneNode.load();
+        Node* curr = one_node.load();
         help_timestamp(curr);
 
-        if (oneNode.compare_exchange_weak(curr, newNode)) {
+        if (one_node.compare_exchange_weak(curr, newNode)) {
             help_timestamp(newNode);
             return newNode -> timestamp.load();
         }
@@ -47,21 +49,19 @@ int TimestampedAtomic<T>::store(T newVal) {
 }
 
 template <typename T>
-std::pair<bool, int> TimestampedAtomic<T>::CAS(T expected, T desired) {
-    Node* newNode = new Node{desired, TBD, curr};
+std::pair<bool, int> TimestampedAtomicNoLL<T>::CAS(T expected, T desired) {
+    Node* newNode = new Node{desired, TBD};
     while(true) {
         int read_ts = clock -> get_timestamp();
-        Node* curr = oneNode.load();
+        Node* curr = one_node.load();
         help_timestamp(curr);
 
-        Node* max = (read_ts > curr -> timestamp) ? {curr -> val, read_ts} : {curr -> val, curr -> timestamp};        
-
-        if (max -> val != expected) {
+        if (curr -> val != expected) {
             delete newNode;
             return {false, read_ts};
         }
 
-        if (oneNode.compare_exchange_weak(curr, newNode)) {
+        if (one_node.compare_exchange_weak(curr, newNode)) {
             help_timestamp(newNode);
             return {true, newNode -> timestamp.load()};
         }

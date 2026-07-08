@@ -54,7 +54,7 @@ int TimestampedAtomic<T>::store(T newVal) {
 
 template <typename T>
 std::pair<bool, int> TimestampedAtomic<T>::CAS(T expected, T desired) {
-    Node* newNode = new Node{desired, TBD, curr};
+    Node* newNode = new Node{desired, TBD};
     while(true) {
         int read_ts = clock -> get_timestamp();
         Node* curr = head.load();

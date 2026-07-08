@@ -3,7 +3,7 @@
 #include <Clock.h>
 
 template <typename T>
-class TimestampedAtomic {
+class TimestampedAtomicNoLL {
     private:
         struct Node {
             T val;
@@ -14,7 +14,7 @@ class TimestampedAtomic {
         const int TBD = -1;
         void help_timestamp(Node* node);
     public:
-        TimestampedAtomic(T val, Clock* c);
+        TimestampedAtomicNoLL(T val, Clock* c);
         std::pair<T, int> load();
         T load_no_timestamping();
         int store(T newVal);
