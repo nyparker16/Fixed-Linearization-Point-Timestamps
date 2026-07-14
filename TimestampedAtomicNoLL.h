@@ -1,6 +1,8 @@
+#pragma once
+
 #include <atomic>
 #include <utility>
-#include <Clock.h>
+#include "Clock.h"
 
 template <typename T>
 class TimestampedAtomicNoLL {
