@@ -1,5 +1,3 @@
-#pragma once 
-
 #include "TimestampedAtomic.h"
 
 template <typename T> 
@@ -31,12 +29,6 @@ std::pair<T, int> TimestampedAtomic<T>::load() {
 }
 
 template <typename T>
-T TimestampedAtomic<T>::load_no_timestamping() {
-    Node* curr = head.load();
-    return curr -> val;
-}
-
-template <typename T>
 int TimestampedAtomic<T>::store(T newVal) {
     Node* newNode = new Node {newVal, TBD, nullptr};
     while(true) {
@@ -54,7 +46,7 @@ int TimestampedAtomic<T>::store(T newVal) {
 
 template <typename T>
 std::pair<bool, int> TimestampedAtomic<T>::CAS(T expected, T desired) {
-    Node* newNode = new Node{desired, TBD};
+    Node* newNode = new Node{desired, TBD, nullptr};
     while(true) {
         int read_ts = clock -> get_timestamp();
         Node* curr = head.load();
