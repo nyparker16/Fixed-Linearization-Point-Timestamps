@@ -56,9 +56,12 @@ std::pair<bool, int> TimestampedAtomicNoLL<T>::CAS(T expected, T desired) {
         Node* curr = one_node.load();
         help_timestamp(curr);
 
+        int ts = curr -> timestamp.load();
+        int true_ts = (read_ts > ts) ? read_ts : ts;
+
         if (curr -> val != expected) {
             delete newNode;
-            return {false, read_ts};
+            return {false, true_ts};
         }
 
         if (one_node.compare_exchange_weak(curr, newNode)) {
