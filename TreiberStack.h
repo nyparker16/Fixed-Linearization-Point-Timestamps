@@ -6,7 +6,7 @@
 #include <vector>
 #include <iostream>
 #include <cassert>
-#include "TimestampedAtomic.h"
+#include "TimestampedAtomicNoLL.h"
 #include "Clock.h" 
 
 template <typename T>
@@ -16,8 +16,8 @@ class TreiberStack {
             T value;
             Node* next;
         };
-        TimestampedAtomic<Node*> head;
-	Clock c;
+        Clock c;
+        TimestampedAtomicNoLL<Node*> head;
     public:
         TreiberStack(): head(nullptr, &c) {}
         int push(T value);
